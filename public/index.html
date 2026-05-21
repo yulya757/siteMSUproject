@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CreativityLab — Тест на творческое мышление</title>
+  <meta name="description" content="CreativityLab — быстрый тест на творческое мышление: оцениваем оригинальность, гибкость и беглость идей. Пройдите за 15 минут." />
+  <meta name="author" content="CreativityLab" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+</head>
+<body>
+  <header class="header" role="banner">
+    <div class="container nav">
+      <a class="logo" href="#main">CreativityLab</a>
+
+      <button class="mobile-toggle" aria-expanded="false" aria-controls="site-navigation" aria-label="Открыть меню">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav id="site-navigation" class="nav-links" role="navigation" aria-label="Главное меню">
+        <a href="#main">Главная</a>
+        <a href="#about">О тесте</a>
+        <a href="#features">Возможности</a>
+        <a href="#example">Пример</a>
+        <button class="nav-cta" id="startTestBtn">Пройти тест</button>
+        <div id="authBlock">
+  	    <button class="nav-cta btn-login" id="regLogBtn">Войти</button>
+	</div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section id="main" class="hero">
+      <div class="container hero-inner">
+        <div class="hero-left">
+          <h1 class="hero-title">Зажги свой <span class="highlight">творческий потенциал</span></h1>
+          <p class="hero-subtitle">Методика оценивает не знания, а способность генерировать нестандартные идеи, находить ассоциации и видеть возможности там, где другие видят препятствия.</p>
+
+          <div class="hero-actions">
+            <button class="btn-primary" id="heroStart">Пройти тест бесплатно</button>
+            <button class="btn-ghost" data-scroll="#about">Узнать больше</button>
+          </div>
+
+          <div class="hero-stats" aria-hidden="true">
+            <div class="stat">
+              <span class="stat-number" data-target="5000">5,000+</span>
+              <span class="stat-text">тестов</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number" data-target="15">15</span>
+              <span class="stat-text">минут</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number" data-target="98">98%</span>
+              <span class="stat-text">удовлетворённости</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-right" aria-hidden="true">
+          <svg class="visual" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+            <defs>
+              <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#06D6A0"/>
+                <stop offset="1" stop-color="#8B5FBF"/>
+              </linearGradient>
+            </defs>
+            <circle cx="120" cy="120" r="90" fill="url(#g1)" opacity="0.18"/>
+            <rect x="220" y="200" width="220" height="220" rx="40" fill="#ffffff" opacity="0.06" transform="rotate(25 330 310)"/>
+            <circle cx="460" cy="80" r="60" fill="#fff" opacity="0.06"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section id="news" class="section padded">
+    <div class="container">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <div>
+                <h2 style="text-align: left; margin: 0;">Новости</h2>
+            </div>
+            <div class="slider-controls">
+                <button id="prevNews" class="btn-slider" aria-label="Назад">←</button>
+                <button id="nextNews" class="btn-slider" aria-label="Вперед">→</button>
+            </div>
+        </div>
+        
+        <div class="news-slider-container">
+    <div class="news-viewport"> <div id="newsFeed" class="news-slider-track"></div>
+    </div> </div>
+    </div>
+</section>
+
+<style>
+.news-slider-container {
+    width: 100%;
+    padding: 10px 0 40px 0; 
+}
+
+.news-viewport {
+    overflow: hidden;
+    width: 100%;
+}
+
+.news-slider-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    gap: 30px; /* Фиксированный зазор */
+}
+
+.news-banner {
+    flex: 0 0 calc((100% - 60px) / 3); 
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    height: 100%;
+    border: 1px solid rgba(15, 23, 42, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.news-banner:hover {
+    transform: translateY(-5px);
+}
+
+.news-banner-img { 
+    width: 100%; 
+    height: 200px; 
+    object-fit: cover; 
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+.news-banner-content { 
+    padding: 24px; 
+    flex-grow: 1; 
+    text-align: left;
+}
+
+.btn-slider {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: var(--bg);
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-slider:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.btn-slider:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.btn-login {
+    background: transparent !important;
+    border: 2px solid var(--accent) !important;
+    color: var(--accent) !important;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-login:hover {
+    background: var(--accent) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(139, 95, 191, 0.2);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .btn-login {
+        width: 100%;
+        order: -1;
+    }
+}
+
+@media (max-width: 992px) {
+    .news-banner { flex: 0 0 calc((100% - 30px) / 2); }
+}
+@media (max-width: 600px) {
+    .news-banner { flex: 0 0 100%; }
+}
+</style>
+
+    <!-- About -->
+    <section id="about" class="section padded">
+      <div class="container">
+        <h2>Как устроен наш тест?</h2>
+        <div class="grid features-grid">
+          <article class="feature-card">
+            <div class="feature-icon">💡</div>
+            <h3>Нестандартные задачи</h3>
+            <p>Вопросы без единственно правильного ответа — мы оцениваем оригинальность и беглость мышления.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Быстро и просто</h3>
+            <p>Полный тест занимает около 15 минут и не требует подготовки.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Подробный отчёт</h3>
+            <p>Вы получите показатели: беглость, гибкость и примерную оригинальность идей.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">🔬</div>
+            <h3>Научная основа</h3>
+            <p>Методика адаптирована от классических подходов Torrance & Guilford.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Audience -->
+    <section id="features" class="section padded alt">
+      <div class="container">
+        <h2>Для кого этот тест</h2>
+        <div class="grid audience-grid">
+          <div class="audience-item">
+            <div class="emoji">🎨</div>
+            <h4>Дизайнеры, маркетологи</h4>
+            <p>Прокачайте инструмент креативности.</p>
+          </div>
+          <div class="audience-item">
+            <div class="emoji">🎓</div>
+            <h4>Студенты</h4>
+            <p>Найдите свои сильные стороны и направления роста.</p>
+          </div>
+          <div class="audience-item">
+            <div class="emoji">💼</div>
+            <h4>Предприниматели</h4>
+            <p>Ищете новые решения для бизнеса.</p>
+          </div>
+          <div class="audience-item">
+            <div class="emoji">🔍</div>
+            <h4>Любознательные</h4>
+            <p>Интересно узнать, как вы думаете.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Example -->
+    <section id="example" class="section padded">
+      <div class="container">
+        <h2>Попробуйте прямо сейчас</h2>
+
+        <div class="example-card" role="region" aria-labelledby="exampleTitle">
+          <h3 id="exampleTitle">За 2 минуты — сколько необычных способов использования скрепки вы придумаете?</h3>
+
+          <div class="example-body">
+            <textarea id="ideaInput" placeholder="Напишите идеи (через новую строку, запятую или точку с запятой). Например: мини-вешалка, импровизированный крючок..." aria-label="Поле для идей"></textarea>
+
+            <div class="controls">
+              <div class="timer" id="timerDisplay" aria-live="polite">02:00</div>
+              <div class="buttons">
+                <button class="btn-outline" id="resetIdeas">Сбросить</button>
+                <button class="btn-primary" id="checkIdeasBtn">Проверить идеи</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="hint">Таймер стартует при первом фокусе в поле ввода.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section padded alt">
+      <div class="container">
+        <h2>Отзывы пользователей</h2>
+        <div class="grid testimonials-grid">
+          <blockquote class="testimonial-card">
+            <p>«Результаты помогли по-новому взглянуть на подход к задачам — много неожиданных инсайтов!»</p>
+            <cite>— <span class="highlight">Елизавета, менеджер</span></cite>
+          </blockquote>
+
+          <blockquote class="testimonial-card">
+            <p>«Никогда не думал, что моё мышление можно так проанализировать. Очень круто!»</p>
+            <cite>— <span class="highlight">Алексей, дизайнер</span></cite>
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="section final-cta padded">
+      <div class="container cta-inner">
+        <h2>Готовы узнать правду о своём творческом мышлении?</h2>
+        <p>Присоединяйтесь к тысячам людей, которые открыли новые границы своего мышления.</p>
+        <div>
+          <button class="btn-large" id="finalStart">Начать тестирование</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div class="container footer-inner">
+      <div class="foot-about">
+        <h3>CreativityLab</h3>
+        <p>Раскрываем творческий потенциал через практические тесты и отчёты.</p>
+      </div>
+      <nav class="foot-nav" aria-label="Футер навигация">
+        <a href="#main">Главная</a>
+        <a href="#about">О тесте</a>
+        <a href="#features">Возможности</a>
+        <a href="#example">Пример</a>
+      </nav>
+      <div class="foot-contact">
+        <p>Тел: +7 (920) 242-53-82</p>
+      </div>
+    </div>
+    <div class="container copyright">
+      &copy; <span id="year"></span> CreativityLab — все права защищены.
+    </div>
+  </footer>
+
+  <!-- Результаты — модальное окно -->
+  <div id="resultModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="resultTitle" aria-modal="true">
+    <div class="modal-panel" role="document" tabindex="-1">
+      <button class="modal-close" aria-label="Закрыть" id="modalClose">&times;</button>
+      <h3 id="resultTitle">Результат</h3>
+      <div id="resultBody" class="modal-body"></div>
+      <div class="modal-actions">
+        <button class="btn-outline" id="downloadReport">Скачать отчёт</button>
+        <button class="btn-primary" id="closeAndContinue">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminLoginModal" class="modal" aria-hidden="true" style="display: none;">
+  <div class="modal-panel login-panel">
+    <button class="modal-close" id="closeLogin">&times;</button>
+    <div class="login-header" style="text-align: center; margin-bottom: 20px;">
+      <div style="font-size: 40px;">🔐</div>
+      <h3>Панель управления</h3>
+    </div>
+    <form id="adminLoginForm">
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom:5px;">Логин</label>
+        <input type="text" id="adminUser" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+      </div>
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom:5px;">Пароль</label>
+        <input type="password" id="adminPass" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+      </div>
+      <div id="loginError" style="color:red; margin-bottom:10px;" hidden></div>
+      <button type="submit" class="btn-primary" style="width:100%; padding:12px;">Войти</button>
+    </form>
+  </div>
+</div>
+
+  <script src="js/script.js" defer></script>
+  
+  <script>
+(function() {
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('adminLoginModal');
+        const form = document.getElementById('adminLoginForm');
+
+        if (!modal) {
+            console.error('КРИТИЧЕСКАЯ ОШИБКА: adminLoginModal всё еще не найден!');
+            return;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.shiftKey && (e.code === 'KeyL' || e.key.toLowerCase() === 'l' || e.key.toLowerCase() === 'к')) {
+                e.preventDefault();
+
+                if (localStorage.getItem('isLoggedIn') === 'true') {
+                    window.location.href = 'admin.html';
+                } else {
+                    modal.setAttribute('aria-hidden', 'false');
+                    modal.style.display = 'flex';
+                    const userInput = document.getElementById('adminUser');
+                    if (userInput) setTimeout(() => userInput.focus(), 100);
+                }
+            }
+        });
+
+        if (form) {
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                const u = document.getElementById('adminUser').value;
+                const p = document.getElementById('adminPass').value;
+
+                if (u === 'admin' && p === '1234') {
+                    localStorage.setItem('isLoggedIn', 'true');
+                    window.location.href = 'admin.html';
+                } else {
+                    const err = document.getElementById('loginError');
+                    if (err) {
+                        err.hidden = false;
+                        err.textContent = "Неверный логин или пароль!";
+                    }
+                }
+            };
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target === modal || e.target.id === 'closeLogin') {
+                modal.setAttribute('aria-hidden', 'true');
+                modal.style.display = 'none';
+            }
+        });
+    });
+})();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const authBlock = document.getElementById('authBlock');
+    const token = localStorage.getItem('authToken'); // Предположим, ты хранишь токен тут
+
+    if (token) {
+        // Если залогинен — рисуем меню профиля
+        authBlock.innerHTML = `
+            <div class="user-menu" id="userMenu">
+                <div class="user-trigger" onclick="document.getElementById('dropdown').classList.toggle('show')">
+                    <span>Мой профиль</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" style="margin-left:5px;"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                </div>
+                <div class="dropdown-content" id="dropdown">
+                    <a href="profile.html">📊 Мои ответы</a>
+                    <a href="#" onclick="logout()" class="logout-item">🚪 Выйти</a>
+                </div>
+            </div>
+        `;
+    }
+
+    // Закрытие дропдауна при клике вне его
+    window.addEventListener('click', (e) => {
+        if (!e.target.closest('.user-menu')) {
+            const d = document.getElementById('dropdown');
+            if (d) d.classList.remove('show');
+        }
+    });
+});
+
+function logout() {
+    localStorage.removeItem('authToken');
+    window.location.reload();
+}
+</script>
+
+</body>
+</html>

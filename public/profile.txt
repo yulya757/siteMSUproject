@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>CreativityLab — Профиль</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Обновленный дизайн шапки (Navbar) */
+        .navbar {
+            background: #ffffff;
+            height: 70px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-decoration: none;
+            color: #333;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span { color: #8B5FBF; }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover { color: #8B5FBF; }
+
+        .btn-logout-top {
+            background: #fff;
+            border: 1.5px solid #ff4d4d;
+            color: #ff4d4d;
+            padding: 8px 22px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout-top:hover {
+            background: #ff4d4d;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(255, 77, 77, 0.2);
+        }
+
+        /* Основная разметка профиля */
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: calc(100vh - 70px);
+            background: #fdfdfd;
+        }
+
+        .profile-sidebar {
+            background: #fff;
+            border-right: 1px solid rgba(0,0,0,0.05);
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .tabs-container { display: flex; flex-direction: column; }
+
+        .session-tab {
+            padding: 18px 25px;
+            border-bottom: 1px solid #f9f9f9;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .session-tab:hover { background: #f8f5ff; }
+        .session-tab.active {
+            background: #f4efff;
+            border-left: 5px solid #8B5FBF;
+        }
+
+        .tab-date { font-weight: bold; color: #333; margin-bottom: 4px; }
+        .tab-time { font-size: 0.85rem; color: #888; }
+        .tab-task { font-size: 0.8rem; font-weight: 600; color: #8B5FBF; margin-top: 6px; }
+
+        /* Контентная область */
+        .profile-content {
+            padding: 50px;
+            background: #f8f9fa;
+        }
+
+        .detail-card {
+            background: #fff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            max-width: 900px;
+        }
+
+        .detail-header {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .text-answer-box {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            line-height: 1.7;
+            color: #444;
+            font-size: 1.05rem;
+            white-space: pre-wrap; /* Сохраняем переносы строк из файла */
+        }
+
+        .file-row {
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo">CreaAI<span>Lab</span></a>
+            </div>
+            <div class="nav-right">
+                <a href="index.html" class="nav-link">На главную</a>
+                <button onclick="logout()" class="btn-logout-top">Выйти</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-layout">
+        <aside class="profile-sidebar">
+            <h3 style="padding: 0 25px 20px; color: #333; font-size: 1.2rem;">Ваши сессии</h3>
+            <div id="sessionsSidebar" class="tabs-container">
+                <div style="padding: 25px; opacity: 0.5;">Загрузка истории...</div>
+            </div>
+        </aside>
+
+        <main class="profile-content">
+            <div id="sessionDetail">
+                <div class="detail-card">
+                    <h2 style="color: #333;">Добро пожаловать в кабинет</h2>
+                    <p style="color: #666; margin-top: 10px;">Выберите нужную сессию из списка слева, чтобы просмотреть результаты.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/profile.js"></script>
+</body>
+</html>
