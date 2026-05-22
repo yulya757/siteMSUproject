@@ -51,6 +51,41 @@ function getSessionInfo(token) {
     } catch (e) { return null; }
 }
 
+function runPythonWorker(sessionRelativePath, userInputText) {
+    return new Promise((resolve, reject) => {
+        const pythonExecutable = process.env.PYTHON || 'python';
+        const workerScript = path.join(__dirname, 'worker.py');
+
+        const pythonProcess = spawn(pythonExecutable, [workerScript, sessionRelativePath, userInputText], {
+            cwd: __dirname,
+            env: {
+                ...process.env,
+                PYTHONUTF8: '1'
+            }
+        });
+
+        let stdout = '';
+        let stderr = '';
+
+        pythonProcess.stdout.setEncoding('utf8');
+        pythonProcess.stderr.setEncoding('utf8');
+
+        pythonProcess.stdout.on('data', chunk => { stdout += chunk; });
+        pythonProcess.stderr.on('data', chunk => { stderr += chunk; });
+        pythonProcess.on('error', err => reject(new Error(`Ошибка запуска Python: ${err.message}`)));
+        pythonProcess.on('close', code => {
+            if (code === 0) {
+                console.log('Python worker stdout:', stdout.trim());
+                if (stderr.trim()) console.warn('Python worker stderr:', stderr.trim());
+                resolve(stdout.trim());
+            } else {
+                console.error('Python worker stderr:', stderr.trim());
+                reject(new Error(`Worker завершился с кодом ${code}. ${stderr.trim()}`));
+            }
+        });
+    });
+}
+
 // --- API Роуты ---
 
 app.get('/api/tasks', (req, res) => {
@@ -107,7 +142,8 @@ app.post('/api/save-session', uploadSession.array('voice_records'), (req, res) =
 
         const safeNick = sessionInfo.usernameDir;
         const timestamp = Date.now();
-        const sessionDir = path.join(USERS_DIR, safeNick, 'sessions', `s_${timestamp}_task${taskId}`);
+        const sessionDirName = `s_${timestamp}_task${taskId}`;
+        const sessionDir = path.join(USERS_DIR, safeNick, 'sessions', sessionDirName);
         
         fs.mkdirSync(sessionDir, { recursive: true });
         fs.writeFileSync(path.join(sessionDir, 'answer.txt'), answer || '');
@@ -117,7 +153,7 @@ app.post('/api/save-session', uploadSession.array('voice_records'), (req, res) =
                 fs.writeFileSync(path.join(sessionDir, `voice_${i+1}.wav`), file.buffer);
             });
         }
-        res.json({ success: true, sessionId: timestamp });
+        res.json({ success: true, sessionId: sessionDirName });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -172,6 +208,27 @@ app.post('/api/check-auth', (req, res) => {
     res.json(session ? { authorized: true, name: session.name } : { authorized: false });
 });
 
+app.post('/api/analyze-session', async (req, res) => {
+    try {
+        const { token, sessionId, answer } = req.body;
+        const sessionInfo = getSessionInfo(token);
+
+        if (!sessionInfo) return res.status(401).json({ success: false, error: "Требуется авторизация" });
+        if (!sessionId) return res.status(400).json({ success: false, error: "sessionId не указан" });
+
+        const safeSessionId = path.basename(String(sessionId));
+        const sessionDir = path.join(USERS_DIR, sessionInfo.usernameDir, 'sessions', safeSessionId);
+        if (!fs.existsSync(sessionDir)) return res.status(404).json({ success: false, error: "Сессия не найдена" });
+
+        const sessionRelative = path.join(sessionInfo.usernameDir, 'sessions', safeSessionId);
+        const analysis = await runPythonWorker(sessionRelative, answer || '');
+        res.json({ success: true, analysis });
+    } catch (e) {
+        console.error("Ошибка анализа сессии:", e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
 // Новости (оставил без изменений, они рабочие)
 app.get('/api/news', (req, res) => {
     try {
@@ -203,8 +260,4 @@ app.get('/:page', (req, res, next) => {
 
 app.listen(PORT, () => {
     console.log(`>>> Сервер CreativityLab запущен: http://localhost:${PORT}`);
-    const pythonPath = path.join(__dirname, 'venv', 'Scripts', 'python.exe');
-    if (fs.existsSync(pythonPath)) {
-        spawn('cmd.exe', ['/c', 'start', pythonPath, 'worker.py'], { detached: true, stdio: 'ignore', cwd: __dirname }).unref();
-    }
 });

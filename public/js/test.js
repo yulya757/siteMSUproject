@@ -1,6 +1,7 @@
 (() => {
     const API_GET_TASKS = '/api/tasks';
     const API_SAVE_SESSION = '/api/save-session';
+    const API_ANALYZE_SESSION = '/api/analyze-session';
 
     const taskIdBtn = document.getElementById('taskIdBtn');
     const taskTitle = document.getElementById('taskTitle');
@@ -114,7 +115,23 @@
                 const res = await fetch(API_SAVE_SESSION, { method: 'POST', body: formData });
                 const data = await res.json();
                 if (data.success) {
-                    alert("Решение сохранено в ваш профиль!");
+                    try {
+                        submitBtn.textContent = "Запускаю ии...";
+                        const analysisRes = await fetch(API_ANALYZE_SESSION, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ token, sessionId: data.sessionId, answer: textAnswer })
+                        });
+                        const analysisData = await analysisRes.json();
+
+                        if (analysisData.success) {
+                            alert("✅ Сессия сохранена, анализ ии завершён:\n\n" + analysisData.analysis);
+                        } else {
+                            alert("⚠️ Сессия сохранена, но ии вернул ошибку: " + (analysisData.error || 'Неизвестная ошибка'));
+                        }
+                    } catch (analysisError) {
+                        alert("⚠️ Сессия сохранена, но не удалось запустить ии: " + analysisError.message);
+                    }
                     window.location.href = '/profile'; // Уходим в профиль
                 } else {
                     alert("Ошибка: " + data.error);

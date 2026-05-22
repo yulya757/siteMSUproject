@@ -28,7 +28,7 @@ try:
     model_whisper = whisper.load_model("base", device="cpu")
     print("[+] Whisper готов!")
 except Exception as e:
-    print(f"[!] Ошибка при старте Whisper: {e}")
+    print(f"[!] Ошибка при старте Whisper: {e}. Транскрибация аудио будет недоступна.")
     #sys.exit()
 
 def get_ai_analysis(instructions, user_content):
