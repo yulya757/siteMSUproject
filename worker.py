@@ -1,14 +1,13 @@
 import os
 import time
-import whisper
-import sys
+import transcribing
 import json
 import openai
 
 # --- НАСТРОЙКИ ---
-YANDEX_CLOUD_API_KEY = "AQVN1KBPdQw20sEAFZkeVaStBYMdOc40rCSnIT-t"
-YANDEX_CLOUD_FOLDER = "b1g1dvtf1uq1af6af3ui"
-YANDEX_CLOUD_MODEL = "deepseek-v3/latest" # или yandexgpt/latest
+YANDEX_CLOUD_API_KEY = os.environ.get("YANDEX_CLOUD_API_KEY", "AQVN1KBPdQw20sEAFZkeVaStBYMdOc40rCSnIT-t") 
+YANDEX_CLOUD_FOLDER = os.environ.get("YANDEX_CLOUD_FOLDER", "b1g1dvtf1uq1af6af3ui")
+YANDEX_CLOUD_MODEL = os.environ.get("YANDEX_CLOUD_MODEL", "yandexgpt/latest") # deepseek-v3/latest или yandexgpt/latest
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Путь к папке данных, которую создает твой Node.js сервер
@@ -16,33 +15,24 @@ DATA_USERS_DIR = os.path.join(BASE_DIR, 'data', 'users')
 
 # Инициализация OpenAI клиента для Yandex Cloud
 client = openai.OpenAI(
-    api_key=YANDEX_CLOUD_API_KEY,
-    base_url="https://ai.api.cloud.yandex.net/v1",
+  api_key=YANDEX_CLOUD_API_KEY,
+  base_url="https://ai.api.cloud.yandex.net/v1",
+  project=YANDEX_CLOUD_FOLDER
 )
 
 print(">>> ЗАПУСК СИСТЕМЫ CREATIVITY LAB (Whisper + AI Analysis)")
 
-# Загрузка Whisper
-try:
-    print("[*] Загрузка локальной модели Whisper 'base'...")
-    model_whisper = whisper.load_model("base", device="cpu")
-    print("[+] Whisper готов!")
-except Exception as e:
-    print(f"[!] Ошибка при старте Whisper: {e}")
-    sys.exit()
-
-def get_ai_analysis(instructions, user_content):
+def get_ai_analysis(instructions, user_input):
     """Отправка накопленного текста в Yandex Cloud"""
     try:
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=f"gpt://{YANDEX_CLOUD_FOLDER}/{YANDEX_CLOUD_MODEL}",
-            messages=[
-                {"role": "system", "content": instructions},
-                {"role": "user", "content": user_content}
-            ],
-            temperature=0.3
+            temperature=0.3,
+            instructions=instructions,
+            input=user_input,
+            max_output_tokens=500
         )
-        return response.choices[0].message.content
+        return response.output_text
     except Exception as e:
         print(f"[!] Ошибка AI: {e}")
         return None
@@ -60,21 +50,8 @@ def run_logic():
 
     # Обходим всех юзеров и их сессии
     for root, dirs, files in os.walk(DATA_USERS_DIR):
-        # 1. ТРАНСКРИБАЦИЯ (Whisper)
-        for file in files:
-            if file.endswith(".wav"):
-                wav_path = os.path.join(root, file)
-                txt_path = wav_path + ".txt" # Сохраняем как voice_1.wav.txt
-
-                if not os.path.exists(txt_path):
-                    print(f"\n[STT] Расшифровка аудио: {file}")
-                    try:
-                        result = model_whisper.transcribe(wav_path, language="ru")
-                        with open(txt_path, "w", encoding="utf-8") as f:
-                            f.write(result["text"].strip())
-                        print(f"[OK] Голос переведен в текст.")
-                    except Exception as e:
-                        print(f"[!] Ошибка Whisper на файле {file}: {e}")
+        # 1. ТРАНСКРИБАЦИЯ (Yandex STT)
+        transcribing.scan_and_transcribe()
 
         # 2. АНАЛИЗ (AI)
         # Проверяем, есть ли в текущей папке answer.txt (это папка сессии)
@@ -101,7 +78,7 @@ def run_logic():
                 
                 if ai_result:
                     with open(analysis_path, 'w', encoding='utf-8') as f:
-                        json.dump({"analysis": ai_result, "done": True}, f, ensure_ascii=False, indent=2)
+                        f.write(json.dumps({"analysis": ai_result}, ensure_ascii=False, indent=2))
                     print(f"[DONE] Анализ сохранен в {os.path.basename(root)}")
 
 print(f"[*] Слежу за: {DATA_USERS_DIR}")
