@@ -1,5 +1,5 @@
 import os
-import whisper
+import transcribing
 import sys
 import json
 import openai
@@ -7,7 +7,7 @@ import openai
 # --- НАСТРОЙКИ ---
 YANDEX_CLOUD_API_KEY = os.environ.get("YANDEX_CLOUD_API_KEY", "AQVN1KBPdQw20sEAFZkeVaStBYMdOc40rCSnIT-t") 
 YANDEX_CLOUD_FOLDER = os.environ.get("YANDEX_CLOUD_FOLDER", "b1g1dvtf1uq1af6af3ui")
-YANDEX_CLOUD_MODEL = os.environ.get("YANDEX_CLOUD_MODEL", "deepseek-v3/latest") # или yandexgpt/latest
+YANDEX_CLOUD_MODEL = os.environ.get("YANDEX_CLOUD_MODEL", "yandexgpt/latest") #deepseek-v3/latest или yandexgpt/latest
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Путь к папке данных, которую создает твой Node.js сервер
@@ -21,15 +21,6 @@ client = openai.OpenAI(
 
 print(">>> ЗАПУСК СИСТЕМЫ CREATIVITY LAB (Whisper + AI Analysis)")
 
-# Загрузка Whisper
-model_whisper = None
-try:
-    print("[*] Загрузка локальной модели Whisper 'base'...")
-    model_whisper = whisper.load_model("base", device="cpu")
-    print("[+] Whisper готов!")
-except Exception as e:
-    print(f"[!] Ошибка при старте Whisper: {e}. Транскрибация аудио будет недоступна.")
-    #sys.exit()
 
 def get_ai_analysis(instructions, user_content):
     """Отправка накопленного текста в Yandex Cloud"""
@@ -64,26 +55,8 @@ def analyze_session(session_id, user_input_text):
 
     full_text = f"Ответ пользователя: {user_input_text}"
 
-    #Добавляем расшифровки всех аудио из этой папки (если whisper загрузился)
-    if model_whisper:
-        for f in os.listdir(session_path):
-            if f.endswith(".wav"):
-                wav_path = os.path.join(session_path, f)
-                txt_path = wav_path + ".txt"
-
-                if not os.path.exists(txt_path):
-                    print(f"[*] Расшифровка {f}...")
-                    try:
-                        result = model_whisper.transcribe(wav_path, language="ru")
-                        with open(txt_path, "w", encoding="utf-8") as wf:
-                            wf.write(result["text"].strip())
-                        print(f"[+] Расшифровка {f} сохранена.")
-                    except Exception as e:
-                        print(f"[!] Ошибка при расшифровке {f}: {e}")
-                
-            if f.endswith(".wav.txt"):
-                with open(os.path.join(session_path, f), "r", encoding="utf-8") as af:
-                    full_text += f"Голосовое дополнение: {af.read()}\n"
+    #транскрибация
+    transcribing.scan_and_transcribe()
 
     # Отправляем все в Yandex Cloud для анализа
     print("[*] Отправляем данные в Yandex Cloud для анализа...")

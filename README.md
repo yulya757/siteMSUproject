@@ -1,39 +1,52 @@
 # Creativity Lab Website
 
-This repository contains the code for the Creativity Lab website.
+Этот репозиторий содержит код для веб-сайта Creativity Lab.
 
-## Setup and Installation
+## Описание проекта
 
-To get this project up and running, follow these steps:
+Проект "Creativity Lab" представляет собой веб-приложение, предназначенное для анализа креативности пользователей. Оно включает в себя:
 
-### 1. Install Node.js and npm
+*   **Веб-сервер (Node.js):** Обрабатывает пользовательские запросы, управляет сессиями и взаимодействует с клиентской частью. AI Worker запускается по запросу для анализа сессии.
+*   **AI Worker (Python):** Скрипт `worker.py` отвечает за транскрибацию аудиозаписей пользователей с использованием Yandex SpeechKit V3 API (через `transcribing.py`) с поддержкой различных форматов (WAV, OGG, WebM) и последующий AI-анализ текстовых данных с помощью YandexGPT.
+*   **Скрипт очистки (`clean_analysis.py`):** Позволяет удалять результаты AI-анализа и транскрибации без удаления исходных данных сессий.
 
-This project uses Node.js for the web server and npm (Node Package Manager) for managing JavaScript dependencies. If you don't have Node.js and npm installed, download them from the official website:
+## Установка и Запуск
+
+Для запуска проекта следуйте этим шагам:
+
+### 1. Установка Node.js и npm
+
+Проект использует Node.js для веб-сервера и npm для управления зависимостями JavaScript. Если они не установлены, скачайте их с официального сайта:
 [https://nodejs.org/](https://nodejs.org/)
 
-Verify installation by running in your terminal:
+Проверьте установку, выполнив в терминале:
+
 ```bash
 node -v
 npm -v
-```
 
-### 2. Install Node.js Dependencies
+### 2. Установка зависимостей Node.js
 
-Navigate to the project's root directory in your terminal and install the necessary Node.js packages:
+Перейдите в корневую директорию проекта в терминале и установите необходимые пакеты Node.js:
+
 ```bash
 npm install
 ```
 
-### 3. Create and Activate Python Virtual Environment
+**Важное замечание о зависимостях Node.js и виртуальных окружениях:**
 
-This project uses Python for AI analysis and speech-to-text functionality. It's highly recommended to use a virtual environment to manage Python dependencies.
+Зависимости Node.js (устанавливаемые через `npm install`) обычно не помещаются в Python-виртуальное окружение. Виртуальные окружения в Python (`venv`) предназначены исключительно для изоляции зависимомостей Python, чтобы избежать конфликтов между разными проектами, использующими разные версии одних и тех же Python-библиотек. Зависимости Node.js управляются `npm` и устанавливаются локально в папку `node_modules` вашего проекта, что является их собственной формой изоляции.
 
-1.  **Create the virtual environment:**
+### 3. Создание и активация виртуального окружения Python
+
+Проект использует Python для AI-анализа и функционала распознавания речи. Настоятельно рекомендуется использовать виртуальное окружение для управления зависимостями Python.
+
+1.  **Создайте виртуальное окружение:**
     ```bash
     python -m venv venv
     ```
 
-2.  **Activate the virtual environment:**
+2.  **Активируйте виртуальное окружение:**
     *   **Windows (PowerShell/CMD):**
         ```bash
         .\venv\Scripts\activate
@@ -42,46 +55,88 @@ This project uses Python for AI analysis and speech-to-text functionality. It's 
         ```bash
         source venv/bin/activate
         ```
-    You should see `(venv)` at the beginning of your terminal prompt when activated.
+    Вы должны увидеть `(venv)` в начале командной строки терминала после активации.
 
-### 4. Install Python Dependencies
+### 4. Установка зависимостей Python
 
-With your virtual environment activated, install the required Python packages:
+При активированном виртуальном окружении установите необходимые пакеты Python:
+
 ```bash
-pip install openai-whisper openai
+pip install openai boto3 requests
 ```
 
+### 5. Настройка переменных окружения
 
-### 5. Running the Server
+Для корректной работы `worker.py` и `transcribing.py` необходимо установить следующие переменные окружения. Вы можете установить их временно в текущей сессии терминала или постоянно в системных переменных среды.
 
-To start the web server, make sure you are in the project's root directory and run:
+**Список переменных:**
+
+*   `YANDEX_CLOUD_API_KEY`: API-ключ для доступа к Yandex Cloud (для YandexGPT и Yandex SpeechKit).
+*   `YANDEX_CLOUD_FOLDER`: Идентификатор папки Yandex Cloud.
+*   `YANDEX_CLOUD_MODEL`: Модель YandexGPT (например, `yandexgpt/latest` или `deepseek-v3/latest`).
+*   `YANDEX_STORAGE_BUCKET_NAME`: Имя бакета Yandex Object Storage для временного хранения аудиофайлов.
+*   `YANDEX_STORAGE_ACCESS_KEY`: Ключ доступа для Yandex Object Storage.
+*   `YANDEX_STORAGE_SECRET_KEY`: Секретный ключ для Yandex Object Storage.
+
+**Пример установки (для Windows CMD, временно):**
+
+```cmd
+set YANDEX_CLOUD_API_KEY="ВАШ_API_КЛЮЧ"
+set YANDEX_CLOUD_FOLDER="ВАШ_FOLDER_ID"
+set YANDEX_CLOUD_MODEL="yandexgpt/latest"
+set YANDEX_STORAGE_BUCKET_NAME="msu-project-creaai-sessions"
+set YANDEX_STORAGE_ACCESS_KEY="ВАШ_AWS_ACCESS_KEY"
+set YANDEX_STORAGE_SECRET_KEY="ВАШ_AWS_SECRET_KEY"
+```
+временно 
+set BUCKET_NAME="msu-project-creaai-sessions"
+set AWS_ACCESS_KEY="YCAJEeZo_9m2TwB4_YkQfeCh9"
+set AWS_SECRET_KEY="YCNj5WJh6nKhoSpw-U_RnM8JaYIxdwTyrDw_cIes"
+set YANDEX_CLOUD_API_KEY="AQVN1KBPdQw20sEAFZkeVaStBYMdOc40rCSnIT-t"
+set YANDEX_CLOUD_FOLDER="b1g1dvtf1uq1af6af3ui"
+set YANDEX_CLOUD_MODEL="yandexgpt/latest"
+
+
+**Пример установки (для Linux/macOS Bash/Zsh, временно):**
+
 ```bash
-node server.js
+export YANDEX_CLOUD_API_KEY="ВАШ_API_КЛЮЧ"
+export YANDEX_CLOUD_FOLDER="ВАШ_FOLDER_ID"
+export YANDEX_CLOUD_MODEL="yandexgpt/latest"
+export YANDEX_STORAGE_BUCKET_NAME="msu-project-creaai-sessions"
+export YANDEX_STORAGE_ACCESS_KEY="ВАШ_AWS_ACCESS_KEY"
+export YANDEX_STORAGE_SECRET_KEY="ВАШ_AWS_SECRET_KEY"
 ```
 
-The server will typically run on `http://localhost:3000` (or another port indicated in the console).
+**Для постоянной настройки (рекомендуется):**
 
-## AI Analysis Worker (`worker.py`)
+*   **Windows:** Добавьте эти переменные через "Панель управления" -> "Система" -> "Дополнительные параметры системы" -> "Переменные среды".
+*   **Linux/macOS:** Добавьте `export` команды в файл конфигурации вашей оболочки (например, `~/.bashrc` или `~/.zshrc`) и выполните `source ~/.bashrc` (или соответствующий файл).
 
-The `worker.py` script is responsible for AI analysis of user sessions. It takes a `session_id` and `user_input_text` as command-line arguments. It performs speech-to-text (using Whisper) on `.wav` files in the session directory and then sends all collected text to Yandex Cloud AI for analysis. The result is saved in `ai_analysis.json` within the session directory.
+### 6. Запуск всего проекта
 
-**API Keys:**
+Для запуска всего проекта необходимо запустить Node.js сервер, который по запросу будет вызывать AI Worker:
 
-Ensure that the following environment variables are set before running `worker.py` or `server.js` (if `server.js` will be spawning `worker.py`):
+1.  **Запуск Node.js сервера:**
+    Откройте терминал, перейдите в корневую директорию проекта, убедитесь, что переменные окружения настроены, и выполните:
+    ```bash
+    node server.js
+    ```
+    Сервер будет доступен по адресу, указанному в консоли (обычно `http://localhost:3000`).
 
-*   `YANDEX_CLOUD_API_KEY`
-*   `YANDEX_CLOUD_FOLDER`
-*   `YANDEX_CLOUD_MODEL`
+## Очистка результатов анализа (`clean_analysis.py`)
 
-Example of setting environment variables (for Windows CMD):
+Скрипт `clean_analysis.py` позволяет удалить результаты AI-анализа (`ai_analysis.json`) и текстовые расшифровки аудио (`*.wav.txt`) из папок пользовательских сессий без удаления самих сессий или исходных аудиофайлов.
+
+**Запуск очистки:**
+
+Откройте терминал, активируйте виртуальное окружение Python (если вы его используете) и выполните:
+
 ```bash
-set YANDEX_CLOUD_API_KEY="YOUR_API_KEY"
-set YANDEX_CLOUD_FOLDER="YOUR_FOLDER_ID"
-set YANDEX_CLOUD_MODEL="deepseek-v3/latest"
+.\venv\Scripts\activate  # Windows (если вы используете venv)
+# или source venv/bin/activate # Linux/macOS (если вы используете venv)
+python clean_analysis.py
 ```
-(For PowerShell, use `$env:VARIABLE_NAME="value"`)
 
-## Current Development Status
-
-*   `worker.py` has been refactored to be run on demand with specific session data.
-*   Integration with `server.js` and `public/js/test.js` is the next step.
+Скрипт выведет в консоль информацию об удаленных файлах.
+```

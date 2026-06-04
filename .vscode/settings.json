@@ -1,0 +1,7 @@
+{
+    "python.linting.pylintEnabled": true,
+    "python.formatting.autopep8Path": "autopep8",
+    "python.linting.pylintPath": "pylint",
+    "editor.formatOnSave": true,
+    "python-envs.defaultEnvManager": "ms-python.python:venv"
+}
