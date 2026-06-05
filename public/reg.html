@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CreativityLab — Регистрация</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .auth-card { 
+        max-width: 500px; 
+        margin: 40px auto; 
+        padding: 32px; 
+        border-radius: 20px; 
+        box-shadow: var(--card-shadow); 
+        background: var(--bg); 
+        opacity: 0; 
+        transform: translateY(20px); 
+        transition: all 0.4s ease; 
+    }
+    .auth-card.show { opacity: 1; transform: translateY(0); }
+    
+    .input-group { margin-bottom: 18px; position: relative; }
+    .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: var(--text); }
+    .input-group input { 
+        width: 100%; 
+        padding: 12px 16px; 
+        border-radius: 12px; 
+        border: 1px solid rgba(15,23,42,0.1); 
+        font-family: inherit;
+        font-size: 1rem;
+        transition: all 0.2s;
+        background: white;
+    }
+    
+    .input-group input.invalid {
+        border-color: #ef476f !important;
+        background-color: #fff9fa;
+    }
+
+    .gender-selection { display: flex; gap: 10px; margin-top: 5px; }
+    .gender-item { flex: 1; }
+    .gender-item input { display: none; }
+    .gender-label { 
+        display: block; 
+        text-align: center; 
+        padding: 10px; 
+        border: 1px solid rgba(15,23,42,0.1); 
+        border-radius: 12px; 
+        cursor: pointer; 
+        transition: all 0.2s; 
+        font-weight: 500;
+        background: #fcfcfc;
+    }
+    .gender-item input:checked + .gender-label { 
+        background: var(--accent); 
+        color: white; 
+        border-color: var(--accent); 
+    }
+    
+    .gender-selection.invalid .gender-label { border-color: #ef476f; }
+
+    .error-text { 
+        color: #ef476f; 
+        font-size: 0.75rem; 
+        margin-top: 4px; 
+        display: none; 
+        font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <a class="logo" href="index.html">CreativityLab</a>
+      <nav class="nav-links"><a href="index.html">На главную</a></nav>
+    </div>
+  </header>
+
+  <main class="section padded">
+    <article class="auth-card" id="regCard">
+    <header style="margin-bottom: 24px; text-align: center;">
+        <h2 style="font-size: 1.6rem; margin-bottom: 8px;">Регистрация</h2>
+        <p style="color: var(--muted);">Все поля обязательны для заполнения</p>
+    </header>
+
+    <form id="regForm" novalidate>
+        <div class="input-group">
+            <label for="realName">Имя Фамилия</label>
+            <input type="text" id="realName" placeholder="Иван Иванов">
+            <div class="error-text">Введите имя (минимум 3 символа)</div>
+        </div>
+
+        <div class="input-group">
+            <label for="userNickname">Никнейм</label>
+            <input type="text" id="userNickname" placeholder="nickname">
+            <div class="error-text">Никнейм (3-15 символов, латиница, цифры, _)</div>
+        </div>
+
+        <div class="input-group">
+            <label>Пол</label>
+            <div class="gender-selection" id="genderBox">
+                <div class="gender-item">
+                    <input type="radio" name="gender" value="мужской" id="gMale">
+                    <label for="gMale" class="gender-label">Мужской</label>
+                </div>
+                <div class="gender-item">
+                    <input type="radio" name="gender" value="женский" id="gFemale">
+                    <label for="gFemale" class="gender-label">Женский</label>
+                </div>
+            </div>
+            <div class="error-text">Выберите пол</div>
+        </div>
+
+        <div class="input-group">
+            <label for="userBirth">Дата рождения</label>
+            <input type="date" id="userBirth">
+            <div class="error-text">Укажите дату рождения</div>
+        </div>
+
+        <div class="input-group">
+            <label for="userPhone">Номер телефона</label>
+            <input type="tel" id="userPhone" placeholder="+7 (___) ___-__-__">
+            <div class="error-text">Введите полный номер телефона</div>
+        </div>
+
+        <div class="input-group">
+            <label for="userEmail">Электронная почта</label>
+            <input type="email" id="userEmail" placeholder="example@mail.com">
+            <div class="error-text">Введите корректный адрес почты</div>
+        </div>
+
+        <div class="input-group">
+            <label for="userPass">Пароль</label>
+            <input type="password" id="userPass" placeholder="минимум 6 символов">
+            <div class="error-text">Пароль должен быть не короче 6 символов</div>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 14px; font-size: 1rem; margin-top: 10px;">
+            Создать аккаунт
+        </button>
+
+        <div style="text-align:center; margin-top:20px; font-size:0.9rem;">
+            Уже есть аккаунт? <a href="login.html" style="color:var(--accent); text-decoration:none; font-weight:600;">Войти</a>
+        </div>
+    </form>
+</article>
+  </main>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('regCard').classList.add('show');
+    });
+
+    const form = document.getElementById('regForm');
+    const phoneInput = document.getElementById('userPhone');
+
+    phoneInput.addEventListener('input', (e) => {
+        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
+        if (!x[2] && x[1] !== '7') {
+            e.target.value = x[1] ? '+7' : '';
+        } else {
+            e.target.value = !x[3] ? `+7 (${x[2]}` : `+7 (${x[2]}) ${x[3]}` + (x[4] ? `-${x[4]}` : '') + (x[5] ? `-${x[5]}` : '');
+        }
+    });
+
+    function validateField(id, condition) {
+        const field = document.getElementById(id);
+        const error = field.parentElement.querySelector('.error-text');
+        if (!condition) {
+            field.classList.add('invalid');
+            error.style.display = 'block';
+            return false;
+        } else {
+            field.classList.remove('invalid');
+            error.style.display = 'none';
+            return true;
+        }
+    }
+
+    form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let isValid = true;
+
+    if (!validateField('realName', document.getElementById('realName').value.trim().length >= 3)) isValid = false;
+
+    const nickVal = document.getElementById('userNickname').value.trim();
+    const nickRegex = /^[a-zA-Z0-9_]{3,15}$/;
+    if (!validateField('userNickname', nickRegex.test(nickVal))) isValid = false;
+
+    const genderChecked = document.querySelector('input[name="gender"]:checked');
+    const genderBox = document.getElementById('genderBox');
+    const genderError = genderBox.parentElement.querySelector('.error-text');
+    if (!genderChecked) {
+        genderBox.classList.add('invalid');
+        genderError.style.display = 'block';
+        isValid = false;
+    } else {
+        genderBox.classList.remove('invalid');
+        genderError.style.display = 'none';
+    }
+
+    if (!validateField('userBirth', document.getElementById('userBirth').value !== "")) isValid = false;
+    const phoneDigits = phoneInput.value.replace(/\D/g, '');
+    if (!validateField('userPhone', phoneDigits.length === 11)) isValid = false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!validateField('userEmail', emailRegex.test(document.getElementById('userEmail').value))) isValid = false;
+    if (!validateField('userPass', document.getElementById('userPass').value.length >= 6)) isValid = false;
+
+    if (isValid) {
+        const formData = {
+    name: document.getElementById('realName').value,
+    nickname: document.getElementById('userNickname').value.trim(), // ВОТ ОН
+    gender: document.querySelector('input[name="gender"]:checked')?.value || '',
+    birth: document.getElementById('userBirth').value,
+    phone: document.getElementById('userPhone').value,
+    email: document.getElementById('userEmail').value,
+    pass: document.getElementById('userPass').value
+};
+
+        fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (data.token) localStorage.setItem('authToken', data.token);
+                alert('Регистрация прошла успешно!');
+                window.location.href = 'index.html';
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        })
+        .catch(err => alert('Ошибка связи с сервером'));
+    }
+});
+
+    form.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', () => {
+            input.classList.remove('invalid');
+            const err = input.parentElement.querySelector('.error-text');
+            if(err) err.style.display = 'none';
+        });
+    });
+  </script>
+</body>
+</html>

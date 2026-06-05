@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CreativityLab — Тестирование</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .task-card { max-width:900px; margin:20px auto; padding:26px; border-radius:16px; box-shadow:var(--card-shadow); background:var(--bg); transition:transform .28s ease,opacity .3s ease; opacity:0; transform:translateY(12px); }
+    .task-card.show { opacity:1; transform:none; }
+    .task-id { background:transparent;border:0;color:var(--accent);font-weight:700;cursor:pointer;padding:6px 8px;border-radius:8px; transition:background .18s, transform .18s; }
+    .task-id:hover { background:rgba(139,95,191,0.06); transform:translateY(-2px); }
+    .task-meta { color:var(--muted); font-size:.95rem; margin-top:6px; }
+    .controls-row { display:flex; gap:12px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap; }
+    .task-footer { margin-top:18px; display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .author-pill { color:var(--muted); font-size:.95rem; }
+    .task-id-small { font-size:.9rem; color:var(--accent); }
+
+    .voice-section { background: #f8faff; padding: 15px; border-radius: 12px; border: 1px dashed var(--accent); margin: 20px 0; }
+    .rec-item { display: flex; align-items: center; gap: 10px; background: white; padding: 8px; border-radius: 8px; border: 1px solid #eee; margin-top: 8px; }
+    .recording-active { animation: pulse-red 1.5s infinite; color: white !important; background: #ef476f !important; }
+    @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <a class="logo" href="index.html">CreativityLab</a>
+      <nav class="nav-links">
+        <a href="index.html">Главная</a>
+        <a href="index.html#example">Пример</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="section padded">
+    <div class="container">
+      <article class="task-card" id="taskCard">
+        <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <button id="taskIdBtn" class="task-id task-id-small">Задача №—</button>
+            <div id="taskMeta" class="task-meta"></div>
+          </div>
+          <button class="btn-outline" id="otherBtn">Другой случай</button>
+        </header>
+
+        <div class="task-body" style="margin-top:14px">
+          <h3 id="taskTitle">Загрузка задачи…</h3>
+          <div id="taskText" style="white-space:pre-wrap;color:var(--text);line-height:1.5;margin-bottom:20px;"></div>
+
+          <div class="voice-section">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span style="font-weight:600; font-size:0.9rem;">Голосовые заметки (макс. 5)</span>
+                <div>
+                    <button class="btn-outline" id="startRec">🎤 Записать</button>
+                    <button class="btn-primary recording-active" id="stopRec" style="display:none;">🛑 Остановить</button>
+                </div>
+            </div>
+            <div id="recordingsList"></div>
+          </div>
+
+          <label for="answerArea" style="display:block;margin-bottom:8px;font-weight:600">Ваш ответ / размышления</label>
+          <textarea id="answerArea" placeholder="Опишите свои идеи здесь..." style="width:100%;min-height:160px;padding:14px;border-radius:12px;border:1px solid rgba(15,23,42,0.1);resize:vertical"></textarea>
+
+          <div class="task-footer">
+            <div class="author-pill" id="taskAuthor">Автор: —</div>
+            <div style="display:flex;gap:12px;">
+              <button class="btn-primary" id="submitAnswer">Завершить сессию</button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <div id="infoModal" class="modal" aria-hidden="true">
+    <div class="modal-panel">
+      <button class="modal-close" id="infoClose">&times;</button>
+      <h3 id="infoTitle">Информация</h3>
+      <div id="infoBody" class="modal-body"></div>
+      <div class="modal-actions"><button class="btn-primary" id="infoOk">Ок</button></div>
+    </div>
+  </div>
+
+  <script src="js/test.js" defer></script>
+</body>
+</html>
