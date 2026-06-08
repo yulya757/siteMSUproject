@@ -143,7 +143,45 @@
             align-items: center;
             gap: 12px;
         }
+        /* НОВЫЕ СТИЛИ для статуса и ошибок */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status-queued { background-color: #ffe0b2; color: #fb8c00; }
+        .status-processing { background-color: #bbdefb; color: #1e88e5; }
+        .status-done { background-color: #c8e6c9; color: #43a047; }
+        .status-error { background-color: #ffcdd2; color: #e53935; }
+
+        .error-block {
+            background-color: #ffebee;
+            border: 1px solid #ef9a9a;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .retry-button {
+            background-color: #8B5FBF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .retry-button:hover { background-color: #7a4bb0; }
+        /* КОНЕЦ НОВЫХ СТИЛЕЙ */
     </style>
+
 </head>
 <body>
 

@@ -1,0 +1,7 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python.defaultInterpreterPath": "c:\\Users\\yulya\\Documents\\siteMSUproject\\venv\\Scripts\\python.exe",
+    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.indexing": true
+}

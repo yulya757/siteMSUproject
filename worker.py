@@ -31,6 +31,28 @@ auth_headers = {"Authorization": f"Api-key {API_KEY}", "x-folder-id": FOLDER_ID}
 ai_client = openai.OpenAI(api_key=API_KEY, base_url="https://ai.api.cloud.yandex.net/v1")
 
 # ==========================================
+# Хелперы для работы с метаданными анализа сессий (Python)
+# ==========================================
+def get_analysis_meta_path(session_dir):
+    return os.path.join(session_dir, "analysis_meta.json")
+
+def save_analysis_meta(session_dir, meta):
+    meta_path = get_analysis_meta_path(session_dir)
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(meta, f, ensure_ascii=False, indent=2)
+
+def load_analysis_meta(session_dir):
+    meta_path = get_analysis_meta_path(session_dir)
+    if os.path.exists(meta_path):
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[!] Ошибка чтения analysis_meta.json для {session_dir}: {e}")
+            return None
+    return None
+
+# ==========================================
 # ФУНКЦИИ ТРАНСКРИБАЦИИ
 # ==========================================
 def parse_stt_json(raw_json_text):
@@ -104,46 +126,67 @@ def process_audio(local_path, s3_key):
 def run_session_pipeline(session_path):
     print(f"[*] Старт обработки сессии: {session_path}")
     
+    meta = load_analysis_meta(session_path)
+    if not meta:
+        meta = {
+             'status': 'processing',
+             'queuedAt': int(time.time() * 1000), # Используем текущее время как заглушку
+             'lastAttemptAt': int(time.time() * 1000),
+             'retryCount': 0,
+             'lastError': None
+        }
+    else:
+        meta["status"] = "processing"
+        meta["lastAttemptAt"] = int(time.time() * 1000)
+        meta["retryCount"] = meta.get("retryCount", 0) + 1
+        meta["lastError"] = None
+    save_analysis_meta(session_path, meta)
+    print(f"[МЕТАДАННЫЕ] Статус сессии обновлен на: {meta['status']}")
+
     if not os.path.exists(session_path):
         print("[!] Ошибка: Папка сессии не найдена.")
+        meta["status"] = "error"
+        meta["lastError"] = "Папка сессии не найдена worker.py."
+        save_analysis_meta(session_path, meta)
         sys.exit(1)
 
-    # 1. ТРАНСКРИБАЦИЯ ВСЕХ АУДИО
-    audio_files = [f for f in os.listdir(session_path) if f.startswith("voice_") and f.endswith(".wav")]
-    for file in audio_files:
-        wav_path = os.path.join(session_path, file)
-        txt_path = os.path.join(session_path, file.replace(".wav", ".txt"))
-        
-        if not os.path.exists(txt_path):
-            print(f"[*] Транскрибация файла: {file}...")
-            s3_key = f"temp_{int(time.time())}_{file}"
-            raw_json = process_audio(wav_path, s3_key)
-            
-            with open(txt_path, "w", encoding="utf-8") as f:
-                if raw_json == "SKIP_UNSUPPORTED": f.write("[ERROR] Неподдерживаемый формат.")
-                elif raw_json: f.write(parse_stt_json(raw_json))
-                else: f.write("[ERROR] Ошибка распознавания.")
-
-    # 2. СБОРКА ДАННЫХ ДЛЯ AI
-    print("[*] Сборка данных для AI анализа...")
-    instructions = "Ты - ассистент для анализа креативности."
-    if os.path.exists(DATABASE_PATH):
-        with open(DATABASE_PATH, "r", encoding="utf-8") as f: instructions = f.read()
-
-    full_text = ""
-    answer_path = os.path.join(session_path, "answer.txt")
-    if os.path.exists(answer_path):
-        with open(answer_path, "r", encoding="utf-8") as f: full_text += f"Текстовый ответ пользователя:\n{f.read()}\n\n"
-    
-    full_text += "Голосовые пояснения пользователя:\n"
-    for file in os.listdir(session_path):
-        if file.startswith("voice_") and file.endswith(".txt"):
-            with open(os.path.join(session_path, file), "r", encoding="utf-8") as af:
-                full_text += f"--- {file} ---\n{af.read()}\n"
-
-    # 3. ОТПРАВКА В AI И СОХРАНЕНИЕ
-    print("[*] Отправка в YandexGPT...")
     try:
+        # 1. ТРАНСКРИБАЦИЯ ВСЕХ АУДИО
+        audio_files = [f for f in os.listdir(session_path) if f.startswith("voice_") and f.endswith(".wav")]
+        for file in audio_files:
+            wav_path = os.path.join(session_path, file)
+            txt_path = os.path.join(session_path, file.replace(".wav", ".txt"))
+            
+            if not os.path.exists(txt_path):
+                print(f"[*] Транскрибация файла: {file}...")
+                s3_key = f"temp_{int(time.time())}_{file}"
+                raw_json = process_audio(wav_path, s3_key)
+                
+                with open(txt_path, "w", encoding="utf-8") as f:
+                    if raw_json == "SKIP_UNSUPPORTED": f.write("[ERROR] Неподдерживаемый формат.")
+                    elif raw_json: f.write(parse_stt_json(raw_json))
+                    else: f.write("[ERROR] Ошибка распознавания.")
+
+        # 2. СБОРКА ДАННЫХ ДЛЯ AI
+        print("[*] Сборка данных для AI анализа...")
+        instructions = "Ты - ассистент для анализа креативности."
+        if os.path.exists(DATABASE_PATH):
+            with open(DATABASE_PATH, "r", encoding="utf-8") as f: instructions = f.read()
+
+        full_text = ""
+        answer_path = os.path.join(session_path, "answer.txt")
+        if os.path.exists(answer_path):
+            with open(answer_path, "r", encoding="utf-8") as f: full_text += f"Текстовый ответ пользователя:\n{f.read()}\n\n"
+        
+        full_text += "Голосовые пояснения пользователя:\n"
+        for file in os.listdir(session_path):
+            if file.startswith("voice_") and file.endswith(".txt"):
+                with open(os.path.join(session_path, file), "r", encoding="utf-8") as af:
+                    full_text += f"--- {file} ---\n{af.read()}\n"
+
+        # 3. ОТПРАВКА В AI И СОХРАНЕНИЕ
+        print("[*] Отправка в YandexGPT...")
+        
         response = ai_client.chat.completions.create(
             model=f"gpt://{FOLDER_ID}/{YANDEX_CLOUD_MODEL}",
             messages=[
@@ -158,9 +201,19 @@ def run_session_pipeline(session_path):
         with open(analysis_file_path, "w", encoding="utf-8") as f:
             json.dump({"analysis": ai_result, "done": True}, f, ensure_ascii=False, indent=2)
         print(f"[+] Анализ успешно завершен и сохранен!")
+
+        meta["status"] = "done"
+        meta["lastError"] = None
+        save_analysis_meta(session_path, meta)
+        print(f"[МЕТАДАННЫЕ] Статус сессии обновлен на: {meta['status']}")
         
     except Exception as e:
-        print(f"[!] Ошибка AI анализа: {e}")
+        print(f"[!] КРИТИЧЕСКАЯ ОШИБКА AI анализа или транскрибации: {e}")
+        meta['status'] = 'error'
+        meta['lastError'] = str(e) # Сохраняем текст ошибки
+        save_analysis_meta(session_path, meta)
+        print(f"[МЕТАДАННЫЕ] Статус сессии обновлен на: {meta['status']}, ОШИБКА: {meta['lastError']}")
+        
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
