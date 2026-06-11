@@ -1,7 +1,7 @@
 (() => {
     const API_GET_TASKS = '/api/tasks';
     const API_SAVE_SESSION = '/api/save-session';
-    const API_SESSIONS_LIST = '/api/user/sessions-list'; // Эндпоинт для проверки статуса
+    const API_SESSIONS_LIST = '/api/user/sessions-list';
 
     const taskIdBtn = document.getElementById('taskIdBtn');
     const taskTitle = document.getElementById('taskTitle');
@@ -20,22 +20,6 @@
     let audioChunks = [];
     let voiceBlobs = [];
 
-    // Создаем красивый overlay-лоадер динамически, чтобы не править HTML
-    const loaderOverlay = document.createElement('div');
-    loaderOverlay.id = 'analysisLoader';
-    loaderOverlay.style = `
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0, 0, 0, 0.85); color: #fff; display: none;
-        flex-direction: column; align-items: center; justify-content: center;
-        z-index: 9999; font-family: sans-serif; transition: all 0.3s ease;
-    `;
-    loaderOverlay.innerHTML = `
-        <div class="spinner" style="width: 50px; height: 50px; border: 5px solid #333; border-top: 5px solid #00fff2; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
-        <h2 id="loaderTitle" style="margin: 0 0 10px 0; font-weight: 600; color: #00fff2;">Обработка сессии...</h2>
-        <p id="loaderStatus" style="margin: 0; color: #ccc; font-size: 1.1rem;">Инициализация воркера...</p>
-        <style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
-    `;
-    document.body.appendChild(loaderOverlay);
 
     async function loadTasks() {
         try {
@@ -108,57 +92,18 @@
 
     window.deleteRec = (index) => { voiceBlobs.splice(index, 1); renderRecordings(); };
 
-    // Функция поллинга (дёргаем статус анализа с сервера)
-    function startPollingStatus(token, targetTimestamp) {
-        const statusElement = document.getElementById('loaderStatus');
-        
-        const intervalId = setInterval(async () => {
-            try {
-                // Запрашиваем список сессий текущего юзера
-                const res = await fetch(`${API_SESSIONS_LIST}?token=${encodeURIComponent(token)}`);
-                if (!res.ok) return;
-                
-                const sessions = await res.json();
-                // Находим нашу текущую отправленную сессию по её timestamp
-                const currentSession = sessions.find(s => s.timestamp === targetTimestamp);
-                
-                if (!currentSession) {
-                    statusElement.textContent = "Поиск сессии в очереди...";
-                    return;
-                }
-
-                // Логика изменения текста статуса в зависимости от прогресса Python-скрипта
-                if (currentSession.analysis) {
-                    // Анализ готов!
-                    statusElement.innerHTML = "<span style='color: #00fff2;'>Анализ завершен! Перенаправление...</span>";
-                    clearInterval(intervalId);
-                    setTimeout(() => {
-                        window.location.href = '/profile';
-                    }, 1500);
-                } else {
-                    // Анализ еще не записан, смотрим на аудиофайлы
-                    const totalFiles = currentSession.files.length;
-                    const transcribedFiles = currentSession.files.filter(f => f.isTranscribed).length;
-
-                    if (totalFiles > 0 && transcribedFiles < totalFiles) {
-                        statusElement.textContent = `Транскрибация аудио: расшифровано ${transcribedFiles} из ${totalFiles}...`;
-                    } else {
-                        statusElement.textContent = "Аудио готово. Нейросеть генерирует анализ креативности...";
-                    }
-                }
-            } catch (err) {
-                console.error("Ошибка при опросе статуса:", err);
-            }
-        }, 3000); // Опрос каждые 3 секунды, чтобы не перегружать Node.js
-    }
-
+   
     if (submitBtn) {
         submitBtn.onclick = async () => {
             const token = localStorage.getItem('authToken');
             if (!token) return alert("Войдите в аккаунт, чтобы сохранить решение!");
 
+            // Проверяем наличие аудиозаписей размышления
+            if (voiceBlobs.length === 0) {
+                return alert("Необходимо записать или загрузить хотя бы один аудиофайл с голосовым размышлением над задачей!");
+            }
+
             const textAnswer = answerArea ? answerArea.value.trim() : '';
-            if (!textAnswer && voiceBlobs.length === 0) return alert("Пустое решение!");
 
             submitBtn.disabled = true;
             submitBtn.textContent = "Сохранение...";
@@ -166,6 +111,7 @@
             const formData = new FormData();
             formData.append('token', token);
             formData.append('taskId', currentTask?.id || 'unknown');
+            formData.append('taskText', currentTask ? (currentTask['Текст задачи'] || '') : ''); 
             formData.append('answer', textAnswer);
             
             voiceBlobs.forEach((blob, i) => {
@@ -176,13 +122,8 @@
                 const res = await fetch(API_SAVE_SESSION, { method: 'POST', body: formData });
                 const data = await res.json();
                 
-                if (data.success && data.sessionId) {
-                    // Включаем лоадер вместо мгновенного редиректа
-                    loaderOverlay.style.display = 'flex';
-                    document.getElementById('loaderStatus').textContent = "Сессия поставлена в очередь сервера...";
-                    
-                    // Запускаем бесконечную проверку статуса конкретно для этой сессии
-                    startPollingStatus(token, data.sessionId);
+                if (data.success) {
+                    window.location.href = `profile.html?sessionId=${data.sessionId}`; 
                 } else {
                     alert("Ошибка: " + data.error);
                     submitBtn.disabled = false;

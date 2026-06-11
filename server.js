@@ -54,6 +54,30 @@ function getSessionInfo(token) {
 // ==========================================
 // СИСТЕМА ОЧЕРЕДИ ДЛЯ PYTHON-ВОРКЕРА
 // ==========================================
+
+// Хелперы для работы с метаданными анализа
+function getAnalysisMetaPath(sessionDir) {
+    return path.join(sessionDir, 'analysis_meta.json');
+}
+
+function saveAnalysisMeta(sessionDir, meta) {
+    const metaPath = getAnalysisMetaPath(sessionDir);
+    fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2), 'utf-8');
+}
+
+function loadAnalysisMeta(sessionDir) {
+    const metaPath = getAnalysisMetaPath(sessionDir);
+    if (fs.existsSync(metaPath)) {
+        try {
+            return JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+        } catch (e) {
+            console.error(`[!] Ошибка чтения analysis_meta.json для ${sessionDir}:`, e);
+            return null;
+        }
+    }
+    return null;
+}
+
 const analyzeQueue = [];
 let isProcessing = false;
 
@@ -140,9 +164,11 @@ app.post('/api/login', async (req, res) => {
     } catch (e) { res.status(500).json({ success: false }); }
 });
 
+// ОБНОВЛЕННЫЙ РОУТ СОХРАНЕНИЯ СЕССИИ
 app.post('/api/save-session', uploadSession.array('voice_records'), (req, res) => {
     try {
-        const { answer, taskId, token } = req.body;
+        // Добавили приём taskText из тела запроса (FormData)
+        const { answer, taskId, token, taskText } = req.body; 
         const sessionInfo = getSessionInfo(token);
 
         if (!sessionInfo) return res.status(401).json({ error: "Требуется авторизация" });
@@ -153,6 +179,19 @@ app.post('/api/save-session', uploadSession.array('voice_records'), (req, res) =
         
         fs.mkdirSync(sessionDir, { recursive: true });
         fs.writeFileSync(path.join(sessionDir, 'answer.txt'), answer || '');
+        
+        // СОХРАНЯЕМ ТЕКСТ ЗАДАЧИ В СЕССИЮ
+        fs.writeFileSync(path.join(sessionDir, 'task_text.txt'), taskText || ''); 
+
+        const initialMeta = {
+            status: 'queued',
+            queuedAt: timestamp,
+            lastAttemptAt: null,
+            retryCount: 0,
+            lastError: null
+        };
+        saveAnalysisMeta(sessionDir, initialMeta);
+        console.log(`[МЕТАДАННЫЕ] Создан initialMeta.json для сессии: ${sessionDir}`);
 
         if (req.files) {
             req.files.forEach((file, i) => {
@@ -168,7 +207,7 @@ app.post('/api/save-session', uploadSession.array('voice_records'), (req, res) =
             processNextInQueue();
         }
 
-        res.json({ success: true, sessionId: timestamp, status: "queued" });
+        res.json({ success: true, sessionId: timestamp, status: initialMeta.status });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -208,13 +247,22 @@ app.get('/api/user/sessions-list', (req, res) => {
                 try { analysisData = JSON.parse(fs.readFileSync(analysisPath, 'utf-8')); } catch(e) {}
             }
 
+            const metaData = loadAnalysisMeta(folderPath);
+
             return {
                 taskId: taskId,
                 timestamp: timestamp,
                 answerText: textContent,
                 files: files,
                 analysis: analysisData ? analysisData.analysis : null,
-                isDone: !!analysisData // Станет true, если файл существует и распарсился, иначе false
+                isDone: !!analysisData, 
+                status: metaData ? metaData.status : (
+                    analysisData ?  "done" : "unknow"
+                ),
+                lastError: metaData ? metaData.lastError : null,
+                queuedAt: metaData ? metaData.queuedAt : null,
+                lastAttemptAt: metaData ? metaData.lastAttemptAt : null,
+                retryCount: metaData ? metaData.retryCount : 0
             };
         }).filter(Boolean);
 
@@ -222,6 +270,50 @@ app.get('/api/user/sessions-list', (req, res) => {
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+app.post('/api/retry_session', (req, res) => {
+    try {
+        const { sessionId, token } = req.body;
+        const sessionInfo = getSessionInfo(token);
+
+        if (!sessionInfo) return res.status(401).json({ error: "Не авторизован" });
+
+        const username = sessionInfo.usernameDir;
+        const userSessionsDir = path.join(USERS_DIR, username, 'sessions');
+        if (!fs.existsSync(userSessionsDir)) return res.status(404).json({ error: "Папка пользователя не найдена" });
+
+        let targetSessionDir = null;
+        const sessionFolders = fs.readdirSync(userSessionsDir);
+        for (const folder of sessionFolders) {
+            if (folder.includes(`s_${sessionId}_`)) {
+                targetSessionDir = path.join(userSessionsDir, folder);
+                break;
+            }
+        }
+
+        if (!targetSessionDir) return res.status(404).json({ error: "Сессия не найдена" });
+
+        const meta = loadAnalysisMeta(targetSessionDir);
+        if (!meta) return res.status(404).json({ error: "Метаданные сессии не найдены" });
+
+        meta.status = 'queued';
+        meta.lastError = null;
+        meta.queuedAt = Date.now();
+        meta.retryCount = (meta.retryCount || 0) + 1;
+        saveAnalysisMeta(targetSessionDir, meta);
+
+        analyzeQueue.push(targetSessionDir);
+        console.log(`[ПОВТОР] Сессия ${sessionId} добавлена в очередь на повторную обработку. Всего в очереди: ${analyzeQueue.length}`);
+        if (!isProcessing) {
+            processNextInQueue();
+        }
+        res.json({ success: true });
+
+    } catch (e) {
+        console.error("[!] Ошибка при повторной постановке сессии в очередь:", e);
+        res.status(500).json({ error: e.message });
     }
 });
 
@@ -250,6 +342,57 @@ app.post('/api/news', uploadNews.single('image'), (req, res) => {
         fs.writeFileSync(NEWS_FILE, JSON.stringify(news, null, 2));
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// Получение данных профиля пользователя
+app.get('/api/user/profile', (req, res) => {
+    try {
+        const token = req.query.token;
+        const sessionInfo = getSessionInfo(token);
+
+        if (!sessionInfo) return res.status(401).json({ error: "Не авторизован" });
+
+        const safeNick = sessionInfo.usernameDir;
+        const profilePath = path.join(USERS_DIR, safeNick, 'profile.json');
+
+        if (!fs.existsSync(profilePath)) return res.status(404).json({ error: "Профиль не найден" });
+
+        const profile = JSON.parse(fs.readFileSync(profilePath, 'utf-8'));
+        // Пароль наружу не отдаем в целях безопасности
+        delete profile.password; 
+
+        res.json(profile);
+    } catch (e) {
+        res.status(500).json({ error: "Ошибка сервера при получении профиля" });
+    }
+});
+
+// Обновление/сохранение измененных данных профиля
+app.post('/api/user/profile', (req, res) => {
+    try {
+        const { token, name, email, phone, birth_date } = req.body;
+        const sessionInfo = getSessionInfo(token);
+
+        if (!sessionInfo) return res.status(401).json({ error: "Не авторизован" });
+
+        const safeNick = sessionInfo.usernameDir;
+        const profilePath = path.join(USERS_DIR, safeNick, 'profile.json');
+
+        if (!fs.existsSync(profilePath)) return res.status(404).json({ error: "Профиль не найден" });
+
+        const profile = JSON.parse(fs.readFileSync(profilePath, 'utf-8'));
+
+        // Обновляем поля, если они переданы
+        if (name !== undefined) profile.name = name;
+        if (email !== undefined) profile.email = email;
+        if (phone !== undefined) profile.phone = phone;
+        if (birth_date !== undefined) profile.birth_date = birth_date;
+
+        fs.writeFileSync(profilePath, JSON.stringify(profile, null, 2));
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: "Ошибка сервера при сохранении профиля" });
+    }
 });
 
 app.get('/:page', (req, res, next) => {

@@ -130,7 +130,7 @@
             line-height: 1.7;
             color: #444;
             font-size: 1.05rem;
-            white-space: pre-wrap; /* Сохраняем переносы строк из файла */
+            white-space: pre-wrap;
         }
 
         .file-row {
@@ -142,6 +142,83 @@
             display: flex;
             align-items: center;
             gap: 12px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status-queued { background-color: #ffe0b2; color: #fb8c00; }
+        .status-processing { background-color: #bbdefb; color: #1e88e5; }
+        .status-done { background-color: #c8e6c9; color: #43a047; }
+        .status-error { background-color: #ffcdd2; color: #e53935; }
+
+        .error-block {
+            background-color: #ffebee;
+            border: 1px solid #ef9a9a;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .retry-button {
+            background-color: #8B5FBF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .retry-button:hover { background-color: #7a4bb0; }
+
+        /* НОВЫЕ СТИЛИ ДЛЯ ФОРМЫ РЕДАКТИРОВАНИЯ ПРОФИЛЯ */
+        .form-group {
+            margin-bottom: 22px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            color: #333;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #8B5FBF;
+        }
+        .btn-save-profile {
+            background: #8B5FBF;
+            color: #fff;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        .btn-save-profile:hover {
+            background: #7a4bb0;
+            box-shadow: 0 4px 12px rgba(139, 95, 191, 0.2);
         }
     </style>
 </head>
@@ -161,7 +238,13 @@
 
     <div class="profile-layout">
         <aside class="profile-sidebar">
-            <h3 style="padding: 0 25px 20px; color: #333; font-size: 1.2rem;">Ваши сессии</h3>
+            <div class="tabs-container" style="margin-bottom: 15px; border-bottom: 2px solid #f5f5f5;">
+                <div id="profileTab" class="session-tab active" style="font-weight: bold;">
+                    Личные данные
+                </div>
+            </div>
+
+            <h3 style="padding: 10px 25px 15px; color: #333; font-size: 1.1rem; border-top: 1px solid #fafafa;">Ваши сессии</h3>
             <div id="sessionsSidebar" class="tabs-container">
                 <div style="padding: 25px; opacity: 0.5;">Загрузка истории...</div>
             </div>
@@ -170,8 +253,7 @@
         <main class="profile-content">
             <div id="sessionDetail">
                 <div class="detail-card">
-                    <h2 style="color: #333;">Добро пожаловать в кабинет</h2>
-                    <p style="color: #666; margin-top: 10px;">Выберите нужную сессию из списка слева, чтобы просмотреть результаты.</p>
+                    <div style="padding: 25px; opacity: 0.5;">Загрузка личного кабинета...</div>
                 </div>
             </div>
         </main>
