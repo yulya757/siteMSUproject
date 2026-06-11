@@ -13,6 +13,18 @@ function statusTextForDetail(status) {
     }
 }
 
+// Вспомогательная функция для получения текстового описания статуса
+function statusTextForDetail(status) {
+    switch (status) {
+        case 'queued': return 'В очереди';
+        case 'processing': return 'В обработке';
+        case 'done': return 'Готово';
+        case 'error': return 'Ошибка';
+        default: return 'Неизвестно';
+    }
+}
+
+
 async function loadProfile() {
     const token = localStorage.getItem('authToken');
     if (!token) { window.location.href = 'login.html'; return; }
@@ -34,6 +46,7 @@ async function loadProfile() {
         
         renderSidebar();
         
+<<<<<<< HEAD
         // 3. Определяем, что выводить на экран (только при первом заходе)
         if (currentView === null) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -61,6 +74,28 @@ async function loadProfile() {
         
         // Если есть сессии, которые еще "не готовы", запускаем цикл опроса
         const hasUnfinished = sessionsData.some(s => s.status !== 'done' && s.status !== 'error');
+=======
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetSessionId = urlParams.get('sessionId');
+        if (targetSessionId) {
+            const targetIndex = sessionsData.findIndex(s => s.timestamp == targetSessionId);
+            if (targetIndex !== -1) {
+                showSession(targetIndex);
+            } else {
+                console.warn(`Сессия с ID ${targetSessionId} не найдена.`);
+                if (sessionsData.length > 0) {
+                    showSession(0); // Показываем первую сессию, если указанная не найдена
+                }
+            }
+        } else if (sessionsData.length > 0) {
+            showSession(0); // Показываем первую сессию по умолчанию
+        }
+        
+
+        // Если есть сессии, которые еще "не готовы" (isDone false или analysis null), 
+        // запускаем цикл опроса
+        const hasUnfinished = sessionsData.some(s => s.status !== 'done' && s.status !== 'error');;
+>>>>>>> 070bc9ad0fa55aaa1e1d959d4b7f4040fe0143f6
         if (hasUnfinished) {
             setTimeout(loadProfile, 3000); 
         }
@@ -104,12 +139,18 @@ function renderSidebar() {
                 statusText = s.isDone ? 'Готово' : 'Неизвестно';
                 statusClass = s.isDone ? 'status-done' : '';
         }
+<<<<<<< HEAD
 
         // Добавляем класс active, если эта вкладка сейчас выбрана
         const isActive = (currentView === index) ? 'active' : '';
 
         return `
             <div class="session-tab ${isActive}" onclick="showSession(${index})">
+=======
+
+        return `
+            <div class="session-tab" onclick="showSession(${index})">
+>>>>>>> 070bc9ad0fa55aaa1e1d959d4b7f4040fe0143f6
                 <div class="tab-date">${dateObj.toLocaleDateString()} <span class="status-badge ${statusClass}">${statusText}</span></div>
                 <div class="tab-time">${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                 <div class="tab-task">Задача ${taskNum}</div>
@@ -260,6 +301,7 @@ function showSession(index, isPoll = false) {
 
                 switch (s.status) {
                     case 'queued':
+<<<<<<< HEAD
                         analysisBoxStyle = 'background: #fff8e1;';
                         analysisBorderColor = 'border: 1px solid #ffecb3;';
                         break;
@@ -277,6 +319,25 @@ function showSession(index, isPoll = false) {
                         break;
                     default:
                         analysisBoxStyle = 'background: #f9f9f9;';
+=======
+                        analysisBoxStyle = 'background: #fff8e1;'; // Светло-желтый
+                        analysisBorderColor = 'border: 1px solid #ffecb3;';
+                        break;
+                    case 'processing':
+                        analysisBoxStyle = 'background: #e3f2fd;'; // Светло-голубой
+                        analysisBorderColor = 'border: 1px solid #bbdefb;';
+                        break;
+                    case 'done':
+                        analysisBoxStyle = 'background: #e8f5e9;'; // Светло-зеленый
+                        analysisBorderColor = 'border: 1px solid #c8e6c9;';
+                        break;
+                    case 'error':
+                        analysisBoxStyle = 'background: #ffebee;'; // Светло-красный (как блок ошибки)
+                        analysisBorderColor = 'border: 1px solid #ffcdd2;';
+                        break;
+                    default:
+                        analysisBoxStyle = 'background: #f9f9f9;'; // Дефолтный
+>>>>>>> 070bc9ad0fa55aaa1e1d959d4b7f4040fe0143f6
                         analysisBorderColor = 'border: 1px solid #eee;';
                 }
 
@@ -306,6 +367,7 @@ function logout() {
     window.location.href = 'index.html';
 }
 
+<<<<<<< HEAD
 // Инициализация при загрузке документа
 document.addEventListener('DOMContentLoaded', () => {
     loadProfile();
@@ -316,6 +378,9 @@ document.addEventListener('DOMContentLoaded', () => {
         profileTab.onclick = showProfileForm;
     }
 });
+=======
+document.addEventListener('DOMContentLoaded', loadProfile);
+>>>>>>> 070bc9ad0fa55aaa1e1d959d4b7f4040fe0143f6
 
 // Функция для повторной постановки сессии в очередь
 async function retrySession(sessionId) {
@@ -323,7 +388,11 @@ async function retrySession(sessionId) {
     if (!token) { alert('Вы не авторизованы.'); return; }
 
     if (!confirm('Вы уверены, что хотите запустить анализ этой сессии снова?')) {
+<<<<<<< HEAD
         return;
+=======
+        return; // Отмена действия
+>>>>>>> 070bc9ad0fa55aaa1e1d959d4b7f4040fe0143f6
     }
 
     try {
@@ -336,7 +405,11 @@ async function retrySession(sessionId) {
 
         if (data.success) {
             alert('Сессия успешно поставлена в очередь на повторный анализ!');
+<<<<<<< HEAD
             loadProfile(); 
+=======
+            loadProfile(); // Перезагружаем профиль, чтобы обновить статус
+>>>>>>> 070bc9ad0fa55aaa1e1d959d4b7f4040fe0143f6
         } else {
             alert('Ошибка при повторной постановке в очередь: ' + (data.error || 'Неизвестная ошибка'));
         }
@@ -346,9 +419,14 @@ async function retrySession(sessionId) {
     }
 }
 
+<<<<<<< HEAD
 // Привязываем функции к глобальному контексту window для корректной работы инлайн-атрибутов onclick
 window.retrySession = retrySession;
 window.showSession = showSession;
 window.showProfileForm = showProfileForm;
 window.saveProfileData = saveProfileData;
 window.logout = logout;
+=======
+// Глобально делаем функцию доступной для HTML
+window.retrySession = retrySession;
+>>>>>>> 070bc9ad0fa55aaa1e1d959d4b7f4040fe0143f6

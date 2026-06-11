@@ -167,15 +167,20 @@ def run_session_pipeline(session_path):
                     elif raw_json: f.write(parse_stt_json(raw_json))
                     else: f.write("[ERROR] Ошибка распознавания.")
 
+<<<<<<< HEAD
         # ==========================================
         # 2. СБОРКА ДАННЫХ ДЛЯ AI
         # ==========================================
+=======
+        # 2. СБОРКА ДАННЫХ ДЛЯ AI
+>>>>>>> 070bc9ad0fa55aaa1e1d959d4b7f4040fe0143f6
         print("[*] Сборка данных для AI анализа...")
         instructions = "Ты - ассистент для анализа креативности."
         if os.path.exists(DATABASE_PATH):
             with open(DATABASE_PATH, "r", encoding="utf-8") as f: instructions = f.read()
 
         full_text = ""
+<<<<<<< HEAD
         
         # --- ДОБАВЛЕНО: Чтение текста задачи ---
         task_path = os.path.join(session_path, "task_text.txt")
@@ -184,6 +189,8 @@ def run_session_pipeline(session_path):
                 full_text += f"--- КОНТЕКСТ (ЗАДАНИЕ К ВЫПОЛНЕНИЮ) ---\n{f.read()}\n\n"
         # --------------------------------------
 
+=======
+>>>>>>> 070bc9ad0fa55aaa1e1d959d4b7f4040fe0143f6
         answer_path = os.path.join(session_path, "answer.txt")
         if os.path.exists(answer_path):
             with open(answer_path, "r", encoding="utf-8") as f: full_text += f"Текстовый ответ пользователя:\n{f.read()}\n\n"
