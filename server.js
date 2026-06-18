@@ -193,16 +193,6 @@ app.post('/api/save-session', uploadSession.array('voice_records'), (req, res) =
         saveAnalysisMeta(sessionDir, initialMeta);
         console.log(`[МЕТАДАННЫЕ] Создан initialMeta.json для сессии: ${sessionDir}`);
 
-        const initialMeta = {
-            status: 'queued',
-            queuedAt: timestamp,
-            lastAttemptAt: null,
-            retryCount: 0,
-            lastError: null
-        };
-        saveAnalysisMeta(sessionDir, initialMeta);
-        console.log(`[МЕТАДАННЫЕ] Создан initialMeta.json для сессии: ${sessionDir}`);
-
         if (req.files) {
             req.files.forEach((file, i) => {
                 fs.writeFileSync(path.join(sessionDir, `voice_${i+1}.wav`), file.buffer);
@@ -265,11 +255,7 @@ app.get('/api/user/sessions-list', (req, res) => {
                 answerText: textContent,
                 files: files,
                 analysis: analysisData ? analysisData.analysis : null,
-<<<<<<< HEAD
                 isDone: !!analysisData, 
-=======
-                isDone: !!analysisData, // Станет true, если файл существует и распарсился, иначе false
->>>>>>> 070bc9ad0fa55aaa1e1d959d4b7f4040fe0143f6
                 status: metaData ? metaData.status : (
                     analysisData ?  "done" : "unknow"
                 ),

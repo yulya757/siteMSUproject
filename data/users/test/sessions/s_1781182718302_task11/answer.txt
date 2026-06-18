@@ -1,0 +1,5 @@
+int abs(x) {
+    return x*(x >= 0) + x * -1 * (x < 0);
+}
+gcc main.c -o a
+./a
