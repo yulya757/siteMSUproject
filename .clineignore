@@ -1,0 +1,19 @@
+# Зависимости и виртуальные окружения (самый главный жор токенов)
+node_modules/
+venv/
+.venv/
+
+# Служебные файлы VS Code и Git
+.git/
+.vscode/
+
+# Файлы данных, логов и сессий (чтобы агент не читал базы данных целиком)
+data/
+uploads/
+*.log
+sessions.json
+analysis_meta.json
+database.txt
+
+# Блокировка тяжелых автогенерируемых файлов Node.js
+package-lock.json

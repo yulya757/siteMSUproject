@@ -187,8 +187,13 @@ textarea#ideaInput{width:100%;min-height:120px;padding:14px;border-radius:10px;b
 }
 
 .result-item.highlight {
-    background: linear-gradient(135deg, #06D6A015, #8B5FBF15);
-    border: 1px solid rgba(139,95,191,0.2);
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 4px 12px rgba(139, 95, 191, 0.2);
+    -webkit-background-clip: initial; 
+    background-clip: initial; 
 }
 
 .result-label {
@@ -212,6 +217,19 @@ textarea#ideaInput{width:100%;min-height:120px;padding:14px;border-radius:10px;b
     border-radius: 6px;
     font-size: .75rem;
     font-weight: 500;
+}
+
+.ideas-columns {
+    text-align: left;
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px; /* Increased gap for better visual separation */
+    padding: 0 10px 0 30px; /* Added left padding to shift ideas slightly to the right */
+}
+
+.ideas-columns li {
+    margin-bottom: 5px; /* Small margin for individual list items */
 }
 
 .ideas-block {

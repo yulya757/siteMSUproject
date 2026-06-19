@@ -73,14 +73,10 @@
       if (resetBtn) resetBtn.addEventListener('click', resetExample);
   
       const modal = $('#resultModal');
-      const closeBtns = [$('#modalClose'), $('#closeAndContinue')];
+      const closeBtns = $('#modalClose');
       
-      closeBtns.forEach(btn => {
-        if(btn) btn.addEventListener('click', () => closeModal(modal));
-      });
-      
-      if ($('#downloadReport')) {
-        $('#downloadReport').addEventListener('click', () => downloadCurrentReport(modal));
+      if (closeBtns) {
+        closeBtns.addEventListener('click', () => closeModal(modal));
       }
   
       if (modal) {
@@ -98,7 +94,7 @@
         updateTimerDisplay();
         if (timeLeft <= 0) {
           clearInterval(timerId);
-          alert('Время вышло!');
+          handleCheckIdeas();
         }
       }, 1000);
     }
@@ -126,36 +122,65 @@
   
     function handleCheckIdeas() {
       const input = $('#ideaInput');
+      if (!input) {
+        console.error("Элемент #ideaInput не найден.");
+        return; 
+      }
       const raw = input?.value || '';
-      const ideas = raw.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
-      if (ideas.length === 0) return alert('Напишите идеи.');
-      
+      const ideas = raw.split(/[\s\n,;]+/).map(s => s.trim()).filter(Boolean);
+      if (ideas.length === 0) {
+        renderResultModal({ ideas: [], metrics: { fluency: 0, uniqueWords: 0, originalityScore: 0, level: "Нет идей" }, message: "Пожалуйста, напишите хотя бы одну идею." });
+        return;
+      }
+
       clearInterval(timerId);
       const fluency = ideas.length;
-      const uniqueWords = new Set(ideas.join(' ').toLowerCase().split(/\W+/).filter(Boolean)).size;
-      const originality = Math.min(10, (uniqueWords / fluency) * 5).toFixed(1);
-  
-      renderResultModal({ ideas, metrics: { fluency, uniqueWords, originalityScore: originality, level: originality > 7 ? 'Высокий' : 'Средний' } });
+      const uniqueWords = new Set(ideas.join(" ").toLowerCase().split(/[^a-zA-Zа-яА-ЯёЁ0-9\\]+/).filter(Boolean)).size;
+      const originality = ((uniqueWords / ideas.length) * 5).toFixed(1);
+
+      renderResultModal({ ideas, metrics: { fluency, uniqueWords, originalityScore: originality, level: originality > 4.9 ? 'Высокий' : 'Средний' } });
     }
   
     function renderResultModal(report) {
-      const modal = $('#resultModal');
-      const body = $('#resultBody');
-      if (!modal || !body) return;
+      const modal = $("#resultModal");
+      const body = $("#resultBody");
+      const title = $("#resultTitle"); 
+      if (!modal || !body || !title) {
+        console.error("Элементы модального окна результатов не найдены.");
+        return; 
+      }
+      
       const m = report.metrics;
-      body.innerHTML = `
-        <div class="result-grid">
-          <div class="result-item"><strong>Беглость:</strong> ${m.fluency}</div>
-          <div class="result-item highlight"><strong>Оценка:</strong> ${m.originalityScore}</div>
-        </div>
-        <ul style="text-align: left; margin-top: 15px;">${report.ideas.map(i => `<li>${i}</li>`).join('')}</ul>
-      `;
+
+      if (report.message) {
+        title.textContent = "Внимание"; 
+        body.innerHTML = `<p>${report.message}</p>`; 
+      } else {
+        title.textContent = "Результат";
+        body.innerHTML = ` 
+          <div class="result-grid">
+            <div class="result-item"><strong>Беглость:</strong> ${m.fluency}</div>
+            <div class="result-item highlight"><strong>Оценка:</strong> ${m.originalityScore} (${m.level})</div>
+          </div>
+          <div class="ideas-columns">
+            ${report.ideas.map(i => `<div><li>${i}</li></div>`).join("")}
+          </div>
+        `;
+      }
+
       modal.dataset.report = JSON.stringify(report);
-      modal.style.display = 'flex';
+      modal.style.display = "flex";
+      modal.setAttribute("aria-hidden", "false"); 
     }
-  
-    function closeModal(modal) { if (modal) modal.style.display = 'none'; }
-  
+
+    function closeModal(modal) { 
+      if (modal) {
+        modal.style.display = "none";
+        modal.setAttribute("aria-hidden", "true"); 
+      }
+    }
+
+    
     async function initNewsSlider() {
       const track = $('#newsFeed');
       if (!track) return;
