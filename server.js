@@ -232,6 +232,12 @@ app.get('/api/user/sessions-list', (req, res) => {
             const txtPath = path.join(folderPath, 'answer.txt');
             const textContent = fs.existsSync(txtPath) ? fs.readFileSync(txtPath, 'utf8') : "Текст отсутствует";
 
+            const taskTextPath = path.join(folderPath, 'task_text.txt');
+            const taskTextContent = fs.existsSync(taskTextPath) ? fs.readFileSync(taskTextPath, 'utf8') : "Текст задачи отсутствует";
+
+            const transcriptionPath = path.join(folderPath, 'transcription.txt');
+            const transcriptionContent = fs.existsSync(transcriptionPath) ? fs.readFileSync(transcriptionPath, 'utf8') : "Транскрипция отсутствует";
+
             const parts = folder.split('_');
             const timestamp = parts[1] ? parseInt(parts[1]) : Date.now();
             const taskId = parts[2] || "unknown";
@@ -253,6 +259,8 @@ app.get('/api/user/sessions-list', (req, res) => {
                 taskId: taskId,
                 timestamp: timestamp,
                 answerText: textContent,
+                task: taskTextContent, 
+                transcriptionText: transcriptionContent,
                 files: files,
                 analysis: analysisData ? analysisData.analysis : null,
                 isDone: !!analysisData, 

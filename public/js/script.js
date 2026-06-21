@@ -136,9 +136,10 @@
       clearInterval(timerId);
       const fluency = ideas.length;
       const uniqueWords = new Set(ideas.join(" ").toLowerCase().split(/[^a-zA-Zа-яА-ЯёЁ0-9\\]+/).filter(Boolean)).size;
-      const originality = ((uniqueWords / ideas.length) * 5).toFixed(1);
+      const originality = ((uniqueWords / ideas.length) * 4.9).toFixed(1);
 
-      renderResultModal({ ideas, metrics: { fluency, uniqueWords, originalityScore: originality, level: originality > 4.9 ? 'Высокий' : 'Средний' } });
+      renderResultModal({ ideas, metrics: { fluency, uniqueWords, originalityScore: originality, level: originality == 4.9 ? 'Высокий' : 'Средний' } });
+      resetExample();
     }
   
     function renderResultModal(report) {

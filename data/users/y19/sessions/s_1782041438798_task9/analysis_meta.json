@@ -1,0 +1,7 @@
+{
+  "status": "error",
+  "queuedAt": 1782041438798,
+  "lastAttemptAt": 1782041440387,
+  "retryCount": 1,
+  "lastError": "Connection error."
+}

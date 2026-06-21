@@ -20,7 +20,6 @@
     let audioChunks = [];
     let voiceBlobs = [];
 
-
     async function loadTasks() {
         try {
             const response = await fetch(API_GET_TASKS);

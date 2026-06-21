@@ -224,12 +224,12 @@ textarea#ideaInput{width:100%;min-height:120px;padding:14px;border-radius:10px;b
     margin-top: 15px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px; /* Increased gap for better visual separation */
-    padding: 0 10px 0 30px; /* Added left padding to shift ideas slightly to the right */
+    gap: 20px; 
+    padding: 0 10px 0 30px;
 }
 
 .ideas-columns li {
-    margin-bottom: 5px; /* Small margin for individual list items */
+    margin-bottom: 5px; 
 }
 
 .ideas-block {
@@ -516,6 +516,66 @@ textarea#ideaInput{width:100%;min-height:120px;padding:14px;border-radius:10px;b
     align-items: center;
     justify-content: center;
 }
+
+.text-answer-box, .combined-text-output {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    line-height: 1.4; /* Изменено с 1.6 на 1.4 для уменьшения интервалов */
+    color: #444;
+    font-size: 1.05rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    /* Удаляем max-height и overflow-y для .text-answer-box, чтобы окно анализа нейросети было полностью видимым */
+    /* max-height: 250px; */ 
+    /* overflow-y: auto; */
+    margin-bottom: 25px;
+}
+
+/* Добавляем специфические стили для .text-answer-box (Анализ нейросети) */
+.text-answer-box {
+    overflow-y: visible; /* Отключаем прокрутку, чтобы текст был полностью виден */
+    max-height: none; /* Убираем максимальную высоту */
+}
+
+.combined-text-output {
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.output-section {
+    margin-bottom: 18px;
+}
+
+.output-title {
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.output-body {
+    white-space: normal;
+    line-height: 1.6;
+    color: #444;
+}
+/* --- General detail section heading separation --- */
+.detail-section h3 {
+    margin-top: 40px; /* Increased top margin for more separation between main sections */
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #e5e5e5; 
+    padding-bottom: 10px;
+}
+
+.detail-card > .detail-header + .detail-section h3 {
+    margin-top: 25px; /* Adjust top margin for the very first section after the main card header */
+}
+
 
 .user-profile {
     padding: 5px 10px;

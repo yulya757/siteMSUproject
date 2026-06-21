@@ -13,6 +13,15 @@ function statusTextForDetail(status) {
     }
 }
 
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 async function loadProfile() {
     const token = localStorage.getItem('authToken');
     if (!token) { window.location.href = 'login.html'; return; }
@@ -112,7 +121,7 @@ function renderSidebar() {
             <div class="session-tab ${isActive}" onclick="showSession(${index})">
                 <div class="tab-date">${dateObj.toLocaleDateString()} <span class="status-badge ${statusClass}">${statusText}</span></div>
                 <div class="tab-time">${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                <div class="tab-task">Задача ${taskNum}</div>
+                <div class="tab-task">${s.task || 'Задача б/н'}</div>
             </div>
         `;
     }).join('');
@@ -230,11 +239,15 @@ function showSession(index, isPoll = false) {
     const analysis = s.analysis || "Анализ еще в обработке или не найден...";
     const taskNum = s.taskId || "б/н";
 
+    const answerText = s.answerText ? s.answerText.trim() : '';
+    const transcriptionText = s.transcriptionText ? s.transcriptionText.trim() : '';
+    const analysisText = analysis ? analysis.trim() : '';
+
     content.innerHTML = `
         <div class="detail-card">
             <div class="detail-header">
                 <h2>Результаты сессии</h2>
-                <span class="detail-task-id">Задача ${taskNum}</span>
+                <span class="detail-task-id">Задание: ${s.task || 'Неизвестно'}</span>
             </div>
             
             <div class="detail-section" style="margin-top: 20px;">
@@ -250,29 +263,34 @@ function showSession(index, isPoll = false) {
                 ${s.status === 'processing' ? `<p style="margin-top:10px; color:#666;">Сессия сейчас обрабатывается. Обновится автоматически.</p>` : ''}
             </div>
 
-            <div class="detail-section" >
-                <h3>Текстовый ответ:</h3>
-                <div class="text-answer-box">${s.answerText || 'Нет данных'}</div>
+           <div class="detail-section">
+                <h3>Текстовый ответ</h3>
+                <div class="scroll-block answer-block">${answerText ? escapeHtml(answerText).replace(/\n/g, '<br>') : '<div class="empty-block">Текстовый ответ отсутствует.</div>'}</div>
             </div>
+            <div class="detail-section">
+                <h3>Транскрибация</h3>
+                <div class="scroll-block transcription-block">${transcriptionText ? escapeHtml(transcriptionText).replace(/\n/g, '<br>') : '<div class="empty-block">Транскрибация отсутствует.</div>'}</div>
+            </div>
+
             ${(() => {
                 let analysisBoxStyle = "";
                 let analysisBorderColor = "";
 
                 switch (s.status) {
                     case 'queued':
-                        analysisBoxStyle = 'background: #fff8e1;'; // Светло-желтый
+                        analysisBoxStyle = 'background: #fff8e1;';
                         analysisBorderColor = 'border: 1px solid #ffecb3;';
                         break;
                     case 'processing':
-                        analysisBoxStyle = 'background: #e3f2fd;'; // Светло-голубой
+                        analysisBoxStyle = 'background: #e3f2fd;';
                         analysisBorderColor = 'border: 1px solid #bbdefb;';
                         break;
                     case 'done':
-                        analysisBoxStyle = 'background: #e8f5e9;'; // Светло-зеленый
+                        analysisBoxStyle = 'background: #e8f5e9;';
                         analysisBorderColor = 'border: 1px solid #c8e6c9;';
                         break;
                     case 'error':
-                        analysisBoxStyle = 'background: #ffebee;'; // Светло-красный
+                        analysisBoxStyle = 'background: #ffebee;';
                         analysisBorderColor = 'border: 1px solid #ffcdd2;';
                         break;
                     default:
@@ -284,21 +302,13 @@ function showSession(index, isPoll = false) {
             <div class="detail-section">
                 <h3>Анализ нейросети:</h3>
                 <div class="text-answer-box" style="${analysisBoxStyle} ${analysisBorderColor}">
-                    ${analysis}
+                    ${escapeHtml(analysisText).replace(/\n/g, '<br>')}
                 </div>
             </div>`;
             })()}
-
-            <div class="detail-section">
-                <h3>Файлы:</h3>
-                <div class="files-list">
-                    ${(s.files && s.files.length > 0) ? s.files.map(f => `
-                        <div class="file-row">🎙 ${f.name} — ${f.isTranscribed ? 'Транскрибировано' : '...'}</div>
-                    `).join('') : '<p style="opacity:0.5">Файлов нет</p>'}
-                </div>
-            </div>
         </div>
     `;
+
 }
 
 function logout() {

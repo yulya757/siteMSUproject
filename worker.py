@@ -167,6 +167,19 @@ def run_session_pipeline(session_path):
                     elif raw_json: f.write(parse_stt_json(raw_json))
                     else: f.write("[ERROR] Ошибка распознавания.")
 
+        # СОХРАНЕНИЕ ОБЩЕЙ ТРАНСКРИБАЦИИ ДЛЯ СЕССИИ
+        all_transcribed_texts = []
+        for file in audio_files:
+            txt_path = os.path.join(session_path, file.replace(".wav", ".txt"))
+            if os.path.exists(txt_path):
+                with open(txt_path, "r", encoding="utf-8") as f:
+                    all_transcribed_texts.append(f.read())
+            
+        combined_transcription = "\n".join(all_transcribed_texts)
+        transcription_output_path = os.path.join(session_path, "transcription.txt")
+        with open(transcription_output_path, "w", encoding="utf-8") as f: f.write(combined_transcription)
+        print("[*] Общая транскрибация для сессии сохранена в transcription.txt")
+
         # 2. СБОРКА ДАННЫХ ДЛЯ AI
         print("[*] Сборка данных для AI анализа...")
         instructions = "Ты - ассистент для анализа креативности."
